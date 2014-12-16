@@ -1,0 +1,428 @@
+\documentclass[10pt,twocolumn]{amsart}
+% \documentclass[12pt]{amsart} % use this instead of twocolumn if not space-cramped!
+\usepackage[text={7in,10in}, centering]{geometry}
+\geometry{letterpaper} 
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{mathtools}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+% Thank you to Daniel Jackoway for the LaTeX template! :)
+% \title{CS 124 Course Summary}
+% \date{}
+\begin{document}
+%\maketitle
+% This section took up too much space on the cheat sheet;
+% uncomment for Unix command summary!
+%
+% \section{Basic Text Processing}
+% \subsection{Unix Commands}
+% \begin{description}
+%   \item[\texttt{grep -P [pattern] [input]}] \hfill \\
+%   Searches \texttt{[input]} for \texttt{[pattern]}, use -P for Perl syntax
+%   \item[\texttt{sort [input]}] \hfill \\
+%   Sorts each line of input. Use -n for numeric sort, -r for reverse,
+%   -f for case insensitive, 
+%   \item[\texttt{uniq -c [input]}] \hfill \\
+%   Returns counts of each unique line's occurrences from input, remember to use
+%   *after* tokenizing if trying to get word counts
+%   \item[\texttt{tr `[chars to match]' `[optional chars to translate into]' 
+%   < [input]}] \hfill \\
+%   Use -s to squeeze repeated matches, -c to complement the first set of chars
+% \end{description}
+Protip: The answer is probably overfitting.
+\section{Edit Distance}
+\subsection{Levenshtein Distance}
+\begin{verbatim}
+D(i, 0) = i
+D(0, j) = j
+
+for each i = 1 ... M
+  for each j = 1 ... N
+    D(i, j) = min(D(i-1, j) + 1,
+                  D(i, j-1) + 1,
+                  D(i-1, j-1) 
+                   + 2 if X(i) != Y(j)
+                   + 0 if X(i) != Y(j))
+return D(N, M) // distance
+\end{verbatim}
+Backtrace: Start at upper right corner and choose a path going to
+the bottom left corner. In quizzes, used backtrace to count number of paths
+including a certain cell.
+\section{Language Modeling}
+\subsection{Unigram Model} \t\\
+     \[P(w_1, w_2, ..., w_{n}) \approx \Pi_{i} P(w_i)\]
+\subsection{n-gram / Bigram Model}
+     \begin{gather*}
+     P(w_i | w_1, w_2, ..., w_{i-1}) \approx \Pi_{i} P(w_i|w_{i-k}...w_{i-1}) \\
+     P(w_{i}|w_{i-1}) \approx \frac{\text{count}(w_{i-1},
+     w_{i})}{\text{count}(w_{i-1})}
+     \end{gather*}
+  In other words, count of the bigram divided by number of times the first word
+  in the bigram appears. Use log in order to sum probabilities rather than 
+  multiplying. \\ \\
+  Example: 
+  \begin{gather*}
+  P(\texttt{<s> I want english food </s>}) = \\
+            P(\texttt{I|<s>}) \times P(\texttt{want|I}) \times 
+            P(\texttt{english|want}) \\
+            \times P(\texttt{food|english}) \times P(\texttt{</s>|food})
+  \end{gather*}
+\subsection{Maximum Likelihood Estimate}
+\begin{gather*}
+\text{For bigram:}\\
+P(w_i|w_{i-1}) = \frac{\text{count}(w_{i-1}, w_i)}
+                      {\text{count}(w_{i-1})}
+\end{gather*}
+General strategy inferred from practice final: numerator is count of the whole thing
+(conditioner and conditionee), denominator is just conditioner $\forall$ MLE questions.
+\subsection{Perplexity}
+Probability of the test set, normalized by the number of words.
+  \begin{gather*}
+  PP(W) = \sqrt[N]{\frac{1}{P\left(w_{1}w_{2}...w_{N}\right)}} 
+  = \sqrt[N]{\Pi_{i=1}^{N}\frac{1}{P\left(w_{i}|w_{1}...w_{i-1}\right)}}  \\
+  = \sqrt[N]{\Pi_{i=1}^{N}\frac{1}{P\left(w_{i}|w_{i-1}\right)}}
+  \text{ (This last one is for bigrams.)}
+  \end{gather*}
+  \texttt{N = number of n-grams in test corpus for given n} \\
+  Minimizing perplexity == maximizing probability. \\
+  $P(w_{i})$ is from the training corpus, not the test corpus. \\
+  Unigram model: Multiply every probability together for
+  $1 \leq i \leq N$. \\
+  Bigram model: Same idea, use the last formula.
+\subsection{Add-\emph{k} Smoothing (Laplace Smoothing)}
+  \begin{gather*}
+   P_{\text{Add-k}}\left(w_{i}|w_{i-1}\right) =
+   \frac
+   {c\left(w_{i-1}, w_{i}\right)+k}
+   {c\left(w_{i-1}\right)+kV} 
+  \end{gather*}
+\texttt{V = sizeof(vocabulary)}
+\subsection{Linear Interpolation}
+Mix trigram, bigram, and unigram probabilities with different weights.
+  \begin{gather*}
+  \hat{P}\left(w_{n}|w_{n-1}w_{n-2}\right) = 
+  \lambda_{1}P\left(w_{n}|w_{n-1}w_{n-2}\right) + \\
+  \lambda_{2}P\left(w_{n}|w_{n-1}\right) +
+  \lambda_{3}P\left(w_{n}\right), \text{where} \sum_{i} \lambda_{i} = 1
+  \end{gather*}
+\subsection{Stupid Backoff}
+\begin{gather*}
+S(w_{i}|w_{i-k+1}^{i-1}) = \begin{cases}
+                           \frac{\text{count}\left(w_{i-k+1}^{i} \right)}
+                                {\text{count}\left(w_{i-l+1}^{i-1} \right)}
+             & \text{ if count}\left(w_{i-k+1}^{i}\right) > 0 \\
+                          0.4S\left(w_{i}|w_{i-k+2}^{i-1}\right)
+             & \text{ otherwise}
+                          \end{cases} \\
+S\left(w_{i}\right) = \frac{\text{count}\left(w_{i}\right)}{N}
+\end{gather*}
+\subsection{Good-Turing Smoothing}
+\begin{gather*}
+P_{GT}^{*}\left(\text{word}\right) = \begin{cases}
+                                     \frac{N_{1}}{N} & \text{if count(word)} = 0\\
+                                     \frac{c^{*}}{N} & \text{if count(word)} > 0
+                                     \end{cases}
+\text{ }c^{*} = \frac{\left(c+1\right)N_{c+1}}{N_{c}}
+\end{gather*}
+$N_{c} = $ Number of words that appear $c$ times
+\section{Spelling Correction}
+\subsection{Noisy Channel}
+\begin{gather*}
+\hat{w} = \text{argmax}_{w \in V} P(x|w)P(w)\\
+P(x|w) = \begin{cases}
+   \frac{\text{del}[w_{i-1},w_i]}{\text{count}[w_{i-1}w_i]} & \text{if deletion} \\
+   \frac{\text{ins}[w_{i-1},x_i]}{\text{count}[w_{i-1}]} & \text{if insertion} \\
+   \frac{\text{sub}[x_{i},w_i]}{\text{count}[w_{i}]} & \text{if substitution} \\
+   \frac{\text{ins}[w_{i-1},w_{i+1}]}{\text{count}[w_{i}w_{i+1}]} 
+        & \text{if transposition}
+          \end{cases}
+\end{gather*}
+\section{Text Classification \& Sentiment Analysis}
+\subsection{Precision and Recall}
+\begin{gather*}
+P = \frac{tp}{tp+fp} , R =  \frac{tp}{tp+fn}
+\end{gather*}
+Precision: \% of selected items that are correct \\
+Recall: \% of correct items that are selected
+\begin{gather*}
+F = \frac{1}{\alpha \frac{1}{P} + (1 - \alpha) \frac{1}{R}} = 
+    \frac{\left(\beta^2 + 1\right)PR}{\beta^2 P + R} \\
+\beta = 1, \alpha = \frac{1}{2} \Rightarrow \boxed{F = \frac{2PR}{P+R}}
+\end{gather*}
+Notes from practice final: False positives are counted as any words that don't
+exactly match the correct tagging (\emph{e.g.}, Jose (B-LOC) vs. San Jose
+(B-LOC I-LOC). False negatives are just things that weren't matched at all
+(\emph{e.g.}, Stanford University, San Jose (the whole tag)). 
+\subsection{Naive Bayes Classifier}
+\begin{gather*}
+\text{Naive Bayes: } \\
+\text{Recall: } P(A|B) = \frac{P(B|A)P(A)}{P(B)}\\
+c_{\text{MAP}} = \text{argmax}_{c \in C} P(d|c)P(c), P(d|c) = P(x_1, ...x_{n}|c)\\
+c_{\text{NB}} = \text{argmax}_{c \in C} P(c_{j}) \Pi_{i \in \text{positions}} 
+                                                 P(w_{i}|c_{j}) \\
+\hat{P}(w|c)= \frac{\text{count}(w,c)+1}{\text{count}(c)+|V|}
+\end{gather*}
+\subsection{Boolean Multinomial Naive Bayes} .\\
+Meredith says: "You do the same process as normal Naive Bayes, but the
+ counts are maxed out at 1 (\emph{i.e.}, 1 if you see the word or n-gram,
+ 0 otherwise)".
+\subsection{Pointwise Mutual Information}
+\begin{gather*}
+PMI(X,Y) = \log_{2} \frac{P(x,y)}{P(x)P(y)}
+\end{gather*}
+\section{Maximum Entropy Classifiers}
+Notes from practice final: maxent model can only make mistakes on the training
+data when two items are identical WRT every feature but the class annotation.
+Consider whether you're overfitting.
+\subsection{Features} Used to connect $d$ with $c$, weighted
+\begin{gather*}
+P(c|d, \lambda) = \frac{\exp \sum_{i} \lambda_{i} f_{i}(c,d)}
+                       {\sum_{c'} \exp \sum_{i}\lambda_{i}f_{i}(c',d)}
+\end{gather*}
+\subsection{Exponential Model Likelihood}
+\begin{gather*}
+\log P(C|D, \lambda) = 
+          \sum_{\left(c,d\right)\in\left(C,D\right)} P(c|d, \lambda) \\
+ = \sum_{\left(c,d\right)\in\left(C,D\right)} \log \exp \sum_{i} \lambda_{i}
+                                               f_{i}\left(c,d\right) -  \\
+    \sum_{\left(c,d\right)\in\left(C,D\right)} \log \sum_{c'} \exp \sum_{i}
+                                        \lambda_{i}f_{i}\left(c',d\right)
+\end{gather*}
+Don't panic, look at Features it will all be okay
+\section{Information Retrieval}
+\subsection{Query Processing: AND}
+\begin{verbatim}
+arraylist intersect (p1, p2) {
+    answer = new arraylist or some shit
+    while (p1 != null && p2 != null) {
+        if (p1.docID == p2.docID) {
+            answer.add(p1.docID)
+            p1 = p1->next
+            p2 = p2->next
+        } else if (p1.docID < p2.docID) {
+            p1 = p1->next
+        } else { // p1.docID > p2.docID
+            p2 = p2->next
+        }
+    }
+    return answer
+}
+\end{verbatim}
+To optimize: Start with smallest set. If given an OR, add the two sizes together.
+\subsection{Positional Indexing}
+Meredith says: ``It's keeping track of the positions of each term in each document,
+and that it helps detect phrases (like you can see if two words occurred next 
+to or near each other)''
+\subsection{Jaccard Coefficient}
+\begin{gather*}
+\text{jaccard}(A, B) = \frac{|A \cap B|}{|A \cup B|} \\
+\text{jaccard}(A, A) = 1 \\
+\text{jaccard}(A, B) = 0 \text{ if } A \cap B = 0
+\end{gather*}
+\subsection{Log Frequency Weighting}
+\begin{gather*}
+\text{score} = \sum_{t \in (q \cap d)} w_{t,d}\\
+w_{t,d} = \begin{cases}
+           1 + \log_{10} \text{tf}_{t,d} & \text{ if tf}_{t,d} > 0 \\
+           0 & \text{otherwise}
+          \end{cases}
+\end{gather*}
+\subsection{tf-idf}
+\begin{gather*}
+w_{td} = \left(1 + \log \text{tf}_{t,d}\right) \times 
+         \log_{10}\left(\frac{N}{\text{df}_{t}}\right) \\
+\text{\texttt{N = sizeof(document list)}}
+\end{gather*}
+tf$_{t,d}$ is number of times term $t$ occurs in document $d$
+df$_{t}$ is document frequency of $t$: number of documents containing $t$
+\begin{gather*}
+\text{score}(q,d) = \sum_{t \in q \cap d} \text{tf-idf}_{t,d}
+\end{gather*}
+\subsection{tf-idf variants} ddd.qqq, usually lnc.ltc \\
+\includegraphics[scale=0.30]{tfidfvariants.png}
+\subsection{Cosine Similarity}
+\begin{gather*}
+\text{Length Normalization of a Vector:} \\
+\lVert\vec{x}\rVert_{2} = \sqrt{\sum_{i}x_{i}^{2}} \\
+\text{Divide vector by this to normalize} \\
+\cos \left(\vec{q}, \vec{d}\right) =
+ \frac{\vec{q} \cdot \vec{d}}{|\vec{q}||\vec{d}|} = 
+\frac{\vec{q}}{|\vec{q}|} \cdot \frac{\vec{d}}{|\vec{d}|} =
+\frac{\sum_{i=1}^{|V|} q_{i}d_{i}}{\sqrt{\sum_{i=1}^{|V|}q_{i}^{2}}
+\sqrt{\sum_{i=1}^{|V|}d_{i}^{2}}} \\
+q_i = \text{tf-idf weight of term i in the query} \\
+d_i = \text{tf-idf weight of term i in the document} \\
+\text{For length-normalized vectors: } \\
+\cos\left(\vec{q}, \vec{d}\right) = \vec{q} \cdot \vec{d} = \sum_{i=1}^{|V|} q_id_i
+\end{gather*}
+\section{Relation Extraction}
+\subsection{This might be relevant somehow idk}
+\begin{gather*}
+P(c|d, \lambda) = \frac{\exp \sum_{i} \lambda_{i} f_{i}(c,d)}
+                       {\sum_{c'} \exp \sum_{i}\lambda_{i}f_{i}(c',d)}
+\end{gather*}
+\section{XML}
+\subsection{Basics}
+\begin{verbatim}
+<root>
+    <element attribute="value">
+        <element>Plain Text!</element>
+    </element>
+    <element>
+    </element>
+</root>
+\end{verbatim}
+Must close tags. Close all the tags.
+\subsection{Document Type Descriptor (DTD)}
+\begin{verbatim}
+<!DOCTYPE root-element-name [element-declarations]>
+
+element-declarations:
+  <!ELEMENT element-name contents-of-element>
+  <!ATTLIST element-name attribute-name
+            attribute-type default-value>
+
+contents-of-element: 
+  EMPTY
+  (#PCDATA) - parsed character data?
+  ANY
+  (comma separated children) - can use |, *, +, ?
+
+attribute-type: 
+  CDATA  - string literals
+  ID     - unique ID
+  IDREF  - another element's ID?
+  IDREFS - Plural!
+
+default-value:
+  an actual value
+  #REQUIRED
+  #IMPLIED - not required
+
+XPath: /root/element/element or something?
+can use @attribute-name in path query
+if a query starts with /, it's an absolute path
+
+nodename : selects all nodes with "nodename"
+/        : selects from root node
+//       : selects nodes in the document from
+           the current node that match the
+           selection no matter where they are
+.        : selects current node
+..       : selects parent node
+@        : selects attributes
+
+Examples:
+//@lang  : selects all attributes named lang
+bookstore//book : selects *all* book elems
+                  that are descendant of
+                  the bookstore elem
+\end{verbatim}
+You totally know XPath now.
+\section{Word Meaning and Word Similarity}
+\subsection{Path(Link) Based Similarity}
+Two concepts are similar if they are near each other in a thesaurus hierarchy,
+\emph{i.e.}, they have a short path between them. Concept path to itself is 1. \\
+
+pathlen$(c_{1},c_{2})$ = 1 + number of edges in the shortest path in
+                        the hypernym graph between the two nodes\\
+\begin{gather*}
+\text{sim}_{\text{path}}(c_{1},c_{2}) = \frac{1}{\text{pathlen}(c_1,c_2)}\\
+\text{wordsim}(w_1,w_2) = \text{max}_{c_1 \in \text{senses}(w_{1}),
+                                      c_2 \in \text{senses}(w_{2})} 
+                          \text{sim}(c_{1},c_{2})
+\end{gather*}
+\subsection{Information Content Similarity}
+\begin{gather*}
+P(c) = \frac{\sum_{w \in \text{words}(c)} \text{count}(w)}{N}
+\end{gather*}
+words(c) is set of all words that are children of node c, \emph{i.e.}, all 
+nodes beneath the given term, including c itself
+\subsection{Information Content}
+\[IC(c) = -\log P(c) \]
+\subsection{Lowest Common Subsumer (LCS)}
+The most informative (lowest) node subsuming the two nodes.
+\subsection{Resnik Similarity}
+\begin{gather*}
+\text{sim}_{\text{resnik}}(c_{1},c_{2}) = -\log P(LCS(c_{1},c_{2}))
+\end{gather*}
+General idea: Similarity between two words is related to their common information,
+so we calculate this by saying that they more words they have in common, the
+more similar they are. This is done by taking the LCS (the lowest node that
+subsumes both words) and summing over all the probabilities in that sub-tree (see
+above).
+\subsection{Dekang Lin Similarity}
+\begin{gather*}
+\text{sim}_{\text{Lin}}(c_{1},c_{2}) = \frac
+{2\log P(LCS(c_1,c_2))}
+{\log P(c_{1})+\log P(c_{2})}
+\end{gather*}
+General idea: Similarity is measured by the ratio between the amount of information
+needed to state the commonality of A and B and the information needed to fully
+describe what A and B are.
+\subsection{Lesk Algorithm}
+\begin{gather*}
+\text{sim}_{\text{eLesk}}(c_1,c_2) = \sum_{r,q\in \text{RELS}} 
+\text{overlap(gloss(} r(c_1)),\text{ gloss}(q(c_2)))
+\end{gather*}
+``gloss'' between two words is a measure of whether their definitions/descriptions
+use similar words/phrases. To calculate: for each $n$-word phrase in both glosses,
+add a score of $n^2$. Slide example: ``paper'' and ``specially prepared'' appeared
+in each, so $1^2 + 2^2 = 5$ is the gloss to add.
+\section{Question Answering}
+\subsection{Mean Reciprocal Rank}
+\begin{gather*}
+MRR = \frac{\sum_{i=1}^{N} \frac{1}{\text{rank}_i}}{N}
+\end{gather*}
+Query score = 1/Rank of first correct answer,
+score = 0 if none of the answers are correct \\
+Take the mean over all N queries
+\section{Machine Translation}
+\subsection{Expectation-Maximization Algorithm} .\\
+Initialize the model with uniform distribution. \\
+Do the following until parameters converge (or for the requested number of steps):\\
+\emph{E Step: } Use the current model to cmpute the probability of all possible
+                alignments of the training data \\
+\begin{gather*}
+P(A, F|E) = \Pi_{j=1}^{J} t\left(f_{j}|e_{a_{j}}\right) \\
+P(A|E,F) = \frac{P(A,F|E)}{\sum_{A}P(A,F|E)} = \frac
+{\Pi_{j=1}t(f_{j}|e_{a_{j}})}{\sum_{A}\Pi_{j=1}^{J}t(f_{j}|e_{a_{j}})}
+\end{gather*}
+\emph{M Step: } Use these alignment probability estimates to re-estimate values for
+                all of the parameters
+\subsection{Bilingual Evaluation Understudy (BLEU)}
+Ratio of \emph{correct} n-grams to the \emph{total} number of output n-grams
+\begin{gather*}
+\text{precision}_{n} = \\ \frac
+{\sum_{C \in \text{corpus}} \sum_{\text{n-gram} \in C} \text{count-in-reference}
+_{\text{clip}}(\text{n-gram})}
+{\sum_{C \in \text{corpus}} \sum_{\text{n-gram} \in C} \text{count(n-gram)}}  \\
+\text{BLEU-n} = \min\left(1, \frac{\text{output-length}}{\text{reference-length}}
+\right) \Pi_{i=1}^{n} \text{precision}_{i}
+\end{gather*}
+General idea: The minimum multiplication is a "brevity-penalty" that will lower
+a translation's score if it is shorter than the reference (just a heuristic).
+``Clipping'' means to cap the count of each n-gram to the maximum count of the
+n-gram in any single reference translation. Sum over each candidate translation,
+then each n-gram in each candidate for the counts in the formula. precision$_{n}$ is
+the precision of each $n$-gram; so BLEU-2 is multiplying the unigram precision
+by the bigram precision.
+\section{PageRank}
+General idea: A ``random surfer'' random walks on web pages Starts at a random page,
+go out using one of the links (each link equally likely), keep track
+of number of visits for each page. At a dead end, jump to a random web page.
+At a non-dead-end, jump to a random web page with probability $\alpha$, jump to
+a link with remaining probability. \\
+\emph{Markov chains: } N states, an $N \times N$ transition probability matrix P,
+matrix entry $P_{i, j}$ tells $P(j|i)$, or the probability of j being the next state
+given that we are currently in state i. \\
+$P$(transition along particular outgoing) =
+$\frac{1-\alpha}{k} + \frac{\alpha}{n}$ \\
+$P$(transition to another particular node) = $\frac{\alpha}{n}$
+\section{Happy Thoughts}
+Amy believes in you! You will rock this final! Or maybe not but it will be okay
+because no matter what it will be over and then you can sleep like this quokka! \\
+\begin{center}\includegraphics[scale=0.25]{quokka.jpg}\end{center}
+\end{document}
