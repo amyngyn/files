@@ -1,0 +1,204 @@
+% resume.tex
+
+\documentclass[10pt,letterpaper]{article}
+\usepackage[letterpaper,margin=0.70in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{mdwlist}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{tgpagella}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\hypersetup {
+  colorlinks=true, urlcolor=black
+}
+
+\pagestyle{empty}
+
+\setlength{\tabcolsep}{0em}
+
+\setlist[itemize]{leftmargin=*, label={}, labelsep=0pt}
+
+% format two pieces of text, one left aligned and one right aligned
+\newcommand{\topheaderrow}[2]
+{\begin{tabular*}{\linewidth}{l@{\extracolsep{\fill}}r}
+    \textbf{#1} &
+    \textbf{#2}
+    \vspace{0.2ex}
+\end{tabular*}}
+\newcommand{\botheaderrow}[2]
+{\begin{tabular*}{\linewidth}{l@{\extracolsep{\fill}}r}
+    #1 &
+    #2 \\
+\end{tabular*}}
+
+% make "C++" look pretty when used in text by touching up the plus signs
+\newcommand{\CPP}
+{C\nolinebreak[4]\hspace{-.05em}\raisebox{.22ex}{\footnotesize\bf ++}}
+
+\begin{document}
+
+% -------------------- HEADER --------------------
+\begin{center}
+{\LARGE \textbf{Amy Nguyen}} \\[0.09cm]
+(310) 894-3580\ \ \textbullet \ \ \href{mailto:amy@cs.stanford.edu}{amy@cs.stanford.edu} \ \ \textbullet \ \ \href{http://www.amynguyen.net}{www.amynguyen.net}
+\end{center}
+
+% -------------------- EDUCATION --------------------
+\hrule
+\vspace{-0.4em}
+\subsection*{Education}
+\begin{itemize}
+    \item 
+    \topheaderrow
+        {\textbf{Stanford University}}
+        {\textbf{Stanford, CA}}
+    \\
+    \botheaderrow
+        {B.S. Computer Science}
+        {2011 -- 2015 (Expected)}
+\end{itemize}
+
+% -------------------- EXPERIENCE --------------------
+\hrule
+\vspace{-0.4em}
+\subsection*{Experience}
+\begin{itemize}
+
+% -------------------- google --------------------
+    \item
+    \topheaderrow
+        {\textbf{Google}}
+        {\textbf{Mountain View, CA}}
+    \\
+    \botheaderrow
+        {Software Engineering Intern | EngEDU Team}
+        {June 2014 -- September 2014}
+        \vspace{-5mm}
+    \begin{itemize}[label={-}, labelsep=5pt]
+        \item Implemented file attachment system for Google-internal question/answer system
+        \item Implemented a contextual user reminder system to prompt users on improving their question
+        \item Conducted user interviews, wrote feature proposals, and created design documents
+        \item Tools: Python, JavaScript, Angular.js, Google App Engine
+    \end{itemize}
+    
+% -------------------- cs198 --------------------
+    \item
+    \topheaderrow
+        {\textbf{CS198 Program}}
+        {\textbf{Stanford, CA}}
+    \\
+    \botheaderrow
+        {CS106 Section Leader | Department of Computer Science, Stanford University}
+        {September 2012 -- Present}
+    \begin{itemize}[label={-}, labelsep=5pt]
+        \item Teach discussion section for introductory computer science, grade assignments and
+              exams, and hold office hours
+        \item Topics: Java, \CPP, recursion, algorithmic analysis, data structures
+    \end{itemize}
+
+% -------------------- technicolor --------------------
+    \item
+    \topheaderrow
+        {\textbf{Technicolor Paris Research \& Innovation Center}}
+        {\textbf{Issy-les-Moulineaux, France}}
+    \\
+    \botheaderrow
+        {Research Intern | Social Networking Research Team}
+        {June 2013 - September 2013}
+    \begin{itemize}[label={-}, labelsep=5pt]
+        \item Wrote multi-threaded web scraper and analyzed data for behaviors promoting influence and user engagement
+        \item Tools: Python, MongoDB, D3.js
+    \end{itemize}
+
+% -------------------- batzoglou --------------------
+    \item
+    \topheaderrow
+        {\textbf{Batzoglou Lab}}
+        {\textbf{Stanford, CA}}
+    \botheaderrow
+        {Research Assistant | Department of Computer Science, Stanford University}
+        {September 2012 -- June 2013}
+    \begin{itemize}[label={-}, labelsep=5pt]
+        \item Analyzed pharmaceutical data connecting chemical compounds, side effects, and drug contraindications
+    \end{itemize}
+
+% -------------------- watt --------------------
+    \item
+    \topheaderrow
+        {\textbf{Watt Lab}}
+        {\textbf{Stanford, CA}}
+    \botheaderrow
+        {Biology Research Assistant | Department of Biology, Stanford University}
+        {June 2012 - August 2012}
+    \begin{itemize}[label={-}, labelsep=5pt]
+        \item Performed lab experiments and data analysis on \emph{colias eurhytheme} butterfly thermoregulatory ability
+    \end{itemize}
+    
+\end{itemize}
+
+% -------------------- SKILLS --------------------
+
+\hrule
+\vspace{-0.4em}
+\subsection*{Skills}
+
+\hyphenpenalty=1000
+\begin{description*}
+    \item[Languages:] Python, C, \CPP, Java, JavaScript
+    \item[Tools:] jQuery, Angular.js, Google App Engine, SQL, MongoDB, D3.js, \LaTeX
+\end{description*}
+
+% -------------------- ACTIVITIES AND AWARDS --------------------
+\hrule
+\vspace{-0.4em}
+\setlength{\columnsep}{26pt}
+\begin{multicols}{2}
+\subsection*{Activities and Awards}
+
+% -------------------- activities --------------------
+\begin{itemize}
+    \parskip=0.1em
+    \item
+    \topheaderrow
+        {Stanford Women in Computer Science} {} \\
+    \botheaderrow
+        {Vice President}
+        {2014 -- Present}
+    \botheaderrow
+        {President}
+        {2013 -- 2014}
+    \botheaderrow
+        {Secretary}
+        {2012 -- 2013}
+    
+    \begin{itemize}[label={-}, labelsep=5pt]
+        \item Act as department and industry liaison, maintain club website and documents, and manage board members
+        \item Coordinator for annual hackathons, industry mentorship program, and quarterly dinner series
+    \end{itemize}
+\end{itemize}
+
+\columnbreak
+
+% make awards level with activities with empty header
+\subsection*{}
+
+% -------------------- awards --------------------
+\begin{itemize}
+    \item \topheaderrow{Google Anita Borg Memorial Scholarship}{}
+    \botheaderrow{Recipient}{March 2014}
+    \begin{itemize}[label={-}, labelsep=5pt]
+    \item Awarded for strong academics and work in improving gender equality in computer science
+    \end{itemize}
+    \item \topheaderrow{Stanford University STEM Fellows Program}{}
+    \botheaderrow{Fellow}{April 2013}
+    \begin{itemize}[label={-}, labelsep=5pt]
+    \item Mentorship and funding for students conducting research in science and engineering fields
+    \end{itemize}
+\end{itemize}
+
+
+\end{multicols}
+\end{document}
