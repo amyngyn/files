@@ -1,5 +1,3 @@
-" Source: Sam King's vimrc: https://github.com/samking/config-files/blob/master/vimrc
-
 " misc
 colorscheme elflord  
 set number
@@ -7,6 +5,7 @@ syntax on
 set showmode
 set mouse=a                         " allow mouse
 set formatoptions=tcroql            " see fo-table for definitions
+imap ` <Esc>                        " for new macbook touchbar bullshit
 
 " width checker
 set textwidth=80
